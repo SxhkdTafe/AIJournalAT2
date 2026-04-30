@@ -1,0 +1,28 @@
+R_DEF: Internal format may change without notice
+local
+color black
+color white
+drawable ic_launcher_background
+drawable ic_launcher_foreground
+id Analyse_button
+id Help_button
+id Search_button
+id Search_spinner
+id Show_button
+id Sort_button
+id Sort_spinner
+id btnClose
+id editTextText
+id listView
+id main
+id pieChart
+id textView
+layout activity_main
+layout popup_layout
+mipmap ic_launcher
+mipmap ic_launcher_round
+string app_name
+style Base.Theme.AIJournalCompanion
+style Theme.AIJournalCompanion
+xml backup_rules
+xml data_extraction_rules

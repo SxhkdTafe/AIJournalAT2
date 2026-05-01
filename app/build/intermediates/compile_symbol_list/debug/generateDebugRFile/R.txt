@@ -10,11 +10,11 @@ int id Show_button 0x0
 int id Sort_button 0x0
 int id Sort_spinner 0x0
 int id btnClose 0x0
-int id editTextText 0x0
-int id listView 0x0
+int id editText 0x0
+int id journalListView 0x0
 int id main 0x0
 int id pieChart 0x0
-int id textView 0x0
+int id resultTextView 0x0
 int layout activity_main 0x0
 int layout popup_layout 0x0
 int mipmap ic_launcher 0x0

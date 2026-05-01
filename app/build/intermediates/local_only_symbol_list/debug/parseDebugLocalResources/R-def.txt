@@ -12,11 +12,11 @@ id Show_button
 id Sort_button
 id Sort_spinner
 id btnClose
-id editTextText
-id listView
+id editText
+id journalListView
 id main
 id pieChart
-id textView
+id resultTextView
 layout activity_main
 layout popup_layout
 mipmap ic_launcher

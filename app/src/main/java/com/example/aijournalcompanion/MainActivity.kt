@@ -1,133 +1,241 @@
 package com.example.aijournalcompanion
 
-import android.app.Dialog
-import android.graphics.Color
 import android.os.Bundle
-import android.view.View
-import android.widget.AdapterView
-import android.widget.AdapterView.OnItemSelectedListener
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ListView
-import android.widget.Spinner
-import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
+import com.google.gson.Gson
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.net.HttpURLConnection
 import java.net.URI
-import com.google.gson.Gson
 
+class MainActivity : ComponentActivity() {
 
-class MainActivity : AppCompatActivity(),  OnItemSelectedListener {
-    private var searchChoices = arrayOf(
-        "Binary Tree", "Hash-based(Map)", "Doubly Linked List"
-    )
-    private var sortChoices = arrayOf(
-        "Bubble Sort", "Insertion Sort", "Selection Sort"
-    )
-    private val listItems = mutableListOf<String>()
+    private val apiUrl = "http://10.0.2.2:8000/emotion_parse"
+    // IMPORTANT: emulator fix (NOT localhost)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val apiUrl = "http://127.0.0.1:8000/emotion_parse"
-
-        enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
-        val showButton = findViewById<Button>(R.id.Show_button)
-        val searchSpin = findViewById<Spinner>(R.id.Search_spinner)
-        val sortSpin = findViewById<Spinner>(R.id.Sort_spinner)
-        val userInput = findViewById<EditText>(R.id.editText)
-        val analyseBtn = findViewById<Button>(R.id.Analyse_button)
-        val journalListView = findViewById<ListView>(R.id.journalListView)
-        val resultTextView = findViewById<TextView>(R.id.resultTextView)
-
-        val adSearch: ArrayAdapter<*> = ArrayAdapter<Any?>(this,
-            android.R.layout.simple_spinner_item, searchChoices
-        )
-        val adSort: ArrayAdapter<*> = ArrayAdapter<Any?>(this,
-            android.R.layout.simple_spinner_item, sortChoices
-        )
-        adSearch.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        adSort.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        searchSpin.adapter = adSearch
-        sortSpin.adapter = adSort
-
-
-        analyseBtn.setOnClickListener {
-            val result = displayInput(userInput, apiUrl)
-            listItems.add(result)
-            val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1,listItems)
-            journalListView.adapter= adapter
-            resultTextView.text = result
+        setContent {
+            MainScreen()
         }
-        showButton.setOnClickListener{
-            showPopup()
-        }
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-
-    }
-    override fun onItemSelected(parent: AdapterView<*>?, view: View, position: Int, id: Long)
-    {
-        Toast.makeText(applicationContext, searchChoices[position], Toast.LENGTH_SHORT).show()
-        Toast.makeText(applicationContext, sortChoices[position], Toast.LENGTH_SHORT).show()
     }
 
-    override  fun onNothingSelected(parent: AdapterView<*>?) {}
-    private fun showPopup() {
-        val dialog = Dialog(this)
-        dialog.setContentView(R.layout.popup_layout)
-        val chart = dialog.findViewById<PieChart>(R.id.pieChart)
-        val btnClose = dialog.findViewById<Button>(R.id.btnClose)
+    @Composable
+    fun MainScreen() {
+        var inputText by remember { mutableStateOf("Name") }
 
-        val entry = ArrayList<PieEntry>()
-        entry.add(PieEntry(50f, "Lmao"))
-        entry.add(PieEntry(50f, "Lmao222"))
-        val dataset = PieDataSet(entry, "lol")
-        dataset.colors = listOf(Color.BLUE, Color.RED)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
 
-        val data = PieData(dataset)
-        data.setValueTextColor(Color.GREEN)
+            // List (replaces ListView)
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
+                items(10) { index ->
+                    Text("Journal item $index")
+                }
+            }
 
-        chart.data = data
+            Spacer(modifier = Modifier.height(12.dp))
 
-        btnClose.setOnClickListener {
-            dialog.dismiss()
+            Text(
+                text = "TextView",
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Input field (EditText)
+            TextField(
+                value = inputText,
+                onValueChange = { inputText = it },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Row 1: Analyse / Show / Help
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Button(onClick = { /* Analyse */ }) {
+                    Text("Analyse")
+                }
+
+                Button(onClick = { /* Show Chart */ }) {
+                    Text("Show Chart")
+                }
+
+                Button(onClick = { /* Help */ }) {
+                    Text("Help")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Row 2: Search / Sort
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Button(onClick = { /* Search */ }) {
+                    Text("Search")
+                }
+
+                Button(onClick = { /* Sort */ }) {
+                    Text("Sort")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Spinners → DropdownMenus (Compose equivalent)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                DropdownMenuBox("Search")
+                DropdownMenuBox("Sort")
+            }
         }
-        dialog.show()
     }
-    private fun displayInput(box: EditText, url: String) : String{
-        if(box.text == null || box.text.isEmpty()){
-            return "Textbox is empty"
-        }
-        val input = box.text.trim().toString()
-        try {
-            val gson = Gson()
-            val uri = URI(url)
-            val conn = uri.toURL().openConnection() as HttpURLConnection
-            conn.requestMethod = "POST"
-            conn.setRequestProperty("Content-Type", "application/json")
-            conn.doInput = true
-            val json = gson.toJson(mapOf("text" to input))
-            conn.getOutputStream().use {it.write((json.toByteArray()))}
+    @Composable
+    fun DropdownMenuBox(label: String) {
+        var expanded by remember { mutableStateOf(false) }
+        var selected by remember { mutableStateOf(label) }
 
-            val response = conn.getInputStream().bufferedReader().readText()
-            val obj = gson.fromJson(response, Map::class.java)
-            return obj["Advice"]?.toString() ?: "(No response)"
+        Box {
+            Button(onClick = { expanded = true }) {
+                Text(selected)
+            }
+
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                listOf("Option 1", "Option 2", "Option 3").forEach {
+                    DropdownMenuItem(
+                        text = { Text(it) },
+                        onClick = {
+                            selected = it
+                            expanded = false
+                        }
+                    )
+                }
+            }
         }
-        catch (e : Exception){
-            return "Error: couldn't connect to server | $e "
+    }
+    // -------------------------
+    // NETWORK CALL (FIXED)
+    // -------------------------
+    private suspend fun sendToBackend(text: String): String {
+        return withContext(Dispatchers.IO) {
+            try {
+                val gson = Gson()
+                val uri = URI(apiUrl)
+                val conn = uri.toURL().openConnection() as HttpURLConnection
+
+                conn.requestMethod = "POST"
+                conn.setRequestProperty("Content-Type", "application/json")
+                conn.doOutput = true
+
+                val json = gson.toJson(mapOf("text" to text))
+                conn.outputStream.use {
+                    it.write(json.toByteArray())
+                }
+
+                val response = conn.inputStream.bufferedReader().readText()
+                val obj = gson.fromJson(response, Map::class.java)
+
+                obj["Advice"]?.toString() ?: "(No response)"
+            } catch (e: Exception) {
+                "Error: ${e.message}"
+            }
         }
+    }
+
+    // -------------------------
+    // DROPDOWN COMPONENT
+    // -------------------------
+    @Composable
+    fun DropdownSelector(
+        label: String,
+        options: List<String>,
+        selected: String,
+        onSelected: (String) -> Unit
+    ) {
+        var expanded by remember { mutableStateOf(false) }
+
+        Column {
+            Text(label)
+
+            Button(onClick = { expanded = true }) {
+                Text(selected)
+            }
+
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                options.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option) },
+                        onClick = {
+                            onSelected(option)
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+    }
+
+    // -------------------------
+    // PIE CHART (MPAndroidChart inside Compose)
+    // -------------------------
+    @Composable
+    fun EmotionPieChart(data: List<String>) {
+
+        AndroidView(factory = { context ->
+            PieChart(context).apply {
+                val entries = ArrayList<PieEntry>()
+
+                val grouped = data.groupingBy { it }.eachCount()
+
+                grouped.forEach { (emotion, count) ->
+                    entries.add(PieEntry(count.toFloat(), emotion))
+                }
+
+                val dataSet = PieDataSet(entries, "Emotions")
+                val pieData = PieData(dataSet)
+
+                this.data = pieData
+                this.invalidate()
+            }
+        })
     }
 }

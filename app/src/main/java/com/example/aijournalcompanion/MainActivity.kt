@@ -27,7 +27,12 @@ import java.net.URI
 class MainActivity : ComponentActivity() {
 
     private val apiUrl = "http://10.0.2.2:8000/emotion_parse"
-    // IMPORTANT: emulator fix (NOT localhost)
+    private var searchChoices = arrayOf(
+        "Binary Tree", "Hash-based(Map)", "Doubly Linked List"
+    )
+    private var sortChoices = arrayOf(
+        "Bubble Sort", "Insertion Sort", "Selection Sort"
+    )
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,7 +52,7 @@ class MainActivity : ComponentActivity() {
                 .padding(16.dp)
         ) {
 
-            // List (replaces ListView)
+
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -67,7 +72,7 @@ class MainActivity : ComponentActivity() {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Input field (EditText)
+
             TextField(
                 value = inputText,
                 onValueChange = { inputText = it },
@@ -77,7 +82,7 @@ class MainActivity : ComponentActivity() {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Row 1: Analyse / Show / Help
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -97,7 +102,7 @@ class MainActivity : ComponentActivity() {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Row 2: Search / Sort
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -113,18 +118,17 @@ class MainActivity : ComponentActivity() {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Spinners → DropdownMenus (Compose equivalent)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                DropdownMenuBox("Search")
-                DropdownMenuBox("Sort")
+                DropdownMenuBox("Search Select", searchChoices)
+                DropdownMenuBox("Sort Select", sortChoices)
             }
         }
     }
     @Composable
-    fun DropdownMenuBox(label: String) {
+    fun DropdownMenuBox(label: String, options: Array<String>) {
         var expanded by remember { mutableStateOf(false) }
         var selected by remember { mutableStateOf(label) }
 
@@ -137,7 +141,7 @@ class MainActivity : ComponentActivity() {
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
             ) {
-                listOf("Option 1", "Option 2", "Option 3").forEach {
+                listOf(options[0], options[1], options[2]).forEach {
                     DropdownMenuItem(
                         text = { Text(it) },
                         onClick = {
@@ -149,9 +153,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-    // -------------------------
-    // NETWORK CALL (FIXED)
-    // -------------------------
+
     private suspend fun sendToBackend(text: String): String {
         return withContext(Dispatchers.IO) {
             try {
@@ -178,9 +180,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // -------------------------
-    // DROPDOWN COMPONENT
-    // -------------------------
+
     @Composable
     fun DropdownSelector(
         label: String,
@@ -214,9 +214,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // -------------------------
-    // PIE CHART (MPAndroidChart inside Compose)
-    // -------------------------
     @Composable
     fun EmotionPieChart(data: List<String>) {
 

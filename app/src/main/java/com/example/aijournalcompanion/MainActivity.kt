@@ -1,6 +1,7 @@
 package com.example.aijournalcompanion
 
 
+import android.R
 import android.graphics.Color
 import android.os.Bundle
 
@@ -16,6 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
+import com.example.aijournalcompanion.BinarySearchTree.BinarySearchTree
+import com.example.aijournalcompanion.DoublyLinkedList.DoublyLinkedList
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
@@ -36,7 +39,9 @@ class MainActivity : ComponentActivity() {
     private var sortChoices = arrayOf(
         "Bubble Sort", "Insertion Sort", "Selection Sort"
     )
-
+    var tree = BinarySearchTree<String>()
+    var hash = HashMap<String, Int>()
+    var doubleLinkedList = DoublyLinkedList<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -1,18 +1,21 @@
 package com.example.aijournalcompanion
 
+
+import android.graphics.Color
 import android.os.Bundle
-import android.widget.Toast
+
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
@@ -34,6 +37,7 @@ class MainActivity : ComponentActivity() {
         "Bubble Sort", "Insertion Sort", "Selection Sort"
     )
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -44,8 +48,10 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun MainScreen() {
-        var inputText by remember { mutableStateOf("Name") }
-
+        var inputText by remember { mutableStateOf("Enter the problems you are feeling to get advice") }
+        var showChart by remember { mutableStateOf(false) }
+        var analysed by remember { mutableStateOf(false)  }
+        var result by remember { mutableStateOf("") }
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -66,7 +72,7 @@ class MainActivity : ComponentActivity() {
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                text = "TextView",
+                text = result,
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -83,20 +89,31 @@ class MainActivity : ComponentActivity() {
             Spacer(modifier = Modifier.height(12.dp))
 
 
+            val test = listOf("sad","happy","angry","happy")
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Button(onClick = { /* Analyse */ }) {
+                Button(onClick = { analysed = true }) {
                     Text("Analyse")
                 }
 
-                Button(onClick = { /* Show Chart */ }) {
+                Button(onClick = {  showChart = true }) {
                     Text("Show Chart")
+
                 }
 
                 Button(onClick = { /* Help */ }) {
                     Text("Help")
+                }
+                if (showChart){
+                    EmotionChartPopup (data = test, onDismiss = {showChart = false})
+                }
+                LaunchedEffect(analysed) {
+                    if (analysed){
+                        val input = inputText.trim()
+                        result =  sendToBackend(input)
+                    }
                 }
             }
 
@@ -182,34 +199,13 @@ class MainActivity : ComponentActivity() {
 
 
     @Composable
-    fun DropdownSelector(
-        label: String,
-        options: List<String>,
-        selected: String,
-        onSelected: (String) -> Unit
-    ) {
-        var expanded by remember { mutableStateOf(false) }
-
-        Column {
-            Text(label)
-
-            Button(onClick = { expanded = true }) {
-                Text(selected)
-            }
-
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
-            ) {
-                options.forEach { option ->
-                    DropdownMenuItem(
-                        text = { Text(option) },
-                        onClick = {
-                            onSelected(option)
-                            expanded = false
-                        }
-                    )
-                }
+    fun EmotionChartPopup(data: List<String>, onDismiss: () -> Unit){
+        Dialog(onDismissRequest = onDismiss){
+            Surface(modifier = Modifier
+                .fillMaxWidth(0.95f)
+                .fillMaxHeight(0.6f)
+                ,  shape = RoundedCornerShape(12.dp), tonalElevation = 8.dp) {
+                EmotionPieChart(data)
             }
         }
     }
@@ -217,22 +213,32 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun EmotionPieChart(data: List<String>) {
 
+        val grouped = data.groupingBy { it }.eachCount()
+        val entries = grouped.map {(emotion, count) -> PieEntry(count.toFloat(), emotion) }
+        val colors = listOf(
+            Color.RED,
+            Color.BLUE,
+            Color.GREEN,
+            Color.MAGENTA,
+            Color.CYAN,
+            Color.YELLOW,
+            Color.GRAY
+        )
         AndroidView(factory = { context ->
-            PieChart(context).apply {
-                val entries = ArrayList<PieEntry>()
+            PieChart(context)},
+            update = { chart ->
 
-                val grouped = data.groupingBy { it }.eachCount()
+                val dataSet = PieDataSet(entries, "Emotions").apply {
+                    valueTextSize = 16f
+                    chart.setEntryLabelTextSize(14f)
 
-                grouped.forEach { (emotion, count) ->
-                    entries.add(PieEntry(count.toFloat(), emotion))
                 }
-
-                val dataSet = PieDataSet(entries, "Emotions")
+                dataSet.colors = colors
                 val pieData = PieData(dataSet)
 
-                this.data = pieData
-                this.invalidate()
+                chart.data = pieData
+                chart.invalidate()
             }
-        })
+        )
     }
 }

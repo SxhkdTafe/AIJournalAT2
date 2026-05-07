@@ -18,50 +18,6 @@ class DoublyLinkedList<T>{
 
         size++
     }
-    fun addFirst(value: T) {
-        val newNode = Node(value)
-
-        if (head == null) {
-            head = newNode
-            tail = newNode
-        } else {
-            newNode.next = head
-            head!!.prev = newNode
-            head = newNode
-        }
-
-        size++
-    }
-    fun remove(value: T): Boolean {
-        var current = head
-
-        while (current != null) {
-            if (current.value == value) {
-
-                val prevNode = current.prev
-                val nextNode = current.next
-
-                if (prevNode != null) {
-                    prevNode.next = nextNode
-                } else {
-                    head = nextNode
-                }
-
-                if (nextNode != null) {
-                    nextNode.prev = prevNode
-                } else {
-                    tail = prevNode
-                }
-
-                size--
-                return true
-            }
-
-            current = current.next
-        }
-
-        return false
-    }
     fun indexOf(value: T): Int {
         var current = head
         var index = 0
@@ -73,22 +29,6 @@ class DoublyLinkedList<T>{
         }
 
         return -1
-    }
-    fun printForward() {
-        var current = head
-        while (current != null) {
-            print("${current.value} <-> ")
-            current = current.next
-        }
-        println("null")
-    }
-    fun printBackward() {
-        var current = tail
-        while (current != null) {
-            print("${current.value} <-> ")
-            current = current.prev
-        }
-        println("null")
     }
 }
 

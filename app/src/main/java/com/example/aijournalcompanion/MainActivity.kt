@@ -4,11 +4,11 @@ package com.example.aijournalcompanion
 import android.R
 import android.graphics.Color
 import android.os.Bundle
-
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -29,6 +29,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.HttpURLConnection
 import java.net.URI
+import kotlin.collections.associateBy
+import kotlin.collections.listOf
 
 class MainActivity : ComponentActivity() {
 
@@ -39,9 +41,9 @@ class MainActivity : ComponentActivity() {
     private var sortChoices = arrayOf(
         "Bubble Sort", "Insertion Sort", "Selection Sort"
     )
-    var tree = BinarySearchTree<String>()
-    var hash = HashMap<String, Int>()
-    var doubleLinkedList = DoublyLinkedList<String>()
+
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,10 +55,23 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun MainScreen() {
+        var mainItems by remember {   mutableStateOf(listOf<String>())}
         var inputText by remember { mutableStateOf("Enter the problems you are feeling to get advice") }
+        var searchText by remember { mutableStateOf("Enter something to search") }
         var showChart by remember { mutableStateOf(false) }
         var analysed by remember { mutableStateOf(false)  }
+        var searched by remember { mutableStateOf(false)  }
+        var sorted by remember { mutableStateOf(false)  }
         var result by remember { mutableStateOf("") }
+        var searchSelected by remember { mutableStateOf(searchChoices[0]) }
+        var sortSelected by remember { mutableStateOf(sortChoices[0]) }
+
+
+
+        mainItems = mainItems + ""
+        var tree = BinarySearchTree<String>()
+        var hash: HashMap<String, Int> = HashMap()
+        var doubleLinkedList = DoublyLinkedList<String>()
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -69,8 +84,8 @@ class MainActivity : ComponentActivity() {
                     .fillMaxWidth()
                     .weight(1f)
             ) {
-                items(10) { index ->
-                    Text("Journal item $index")
+                items(mainItems) { mainItems->
+                    Text(mainItems)
                 }
             }
 
@@ -87,6 +102,12 @@ class MainActivity : ComponentActivity() {
             TextField(
                 value = inputText,
                 onValueChange = { inputText = it },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+            TextField(
+                value = searchText,
+                onValueChange = { searchText = it },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true
             )
@@ -118,6 +139,7 @@ class MainActivity : ComponentActivity() {
                     if (analysed){
                         val input = inputText.trim()
                         result =  sendToBackend(input)
+                        mainItems += "$input | $result"
                     }
                 }
             }
@@ -129,13 +151,63 @@ class MainActivity : ComponentActivity() {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Button(onClick = { /* Search */ }) {
+                Button(onClick = { searched = true }) {
                     Text("Search")
                 }
 
-                Button(onClick = { /* Sort */ }) {
+                Button(onClick = { sorted = true }) {
                     Text("Sort")
                 }
+                LaunchedEffect(searched, ) {
+                    if (searched) {
+                        when (searchSelected) {
+                            "Binary Tree" -> {
+                                tree = insertBinTree(mainItems)
+                                result =
+                                    (SearchUtils.binTreeSearch(tree, searchText.trim())).toString()
+                            }
+
+                            "Hash-based(Map)" -> {
+                                hash = HashMap(mainItems.associateWith { it.length })
+                                result =
+                                    SearchUtils.hashMapSearch(hash, searchText.trim()).toString()
+                            }
+
+                            "Doubly Linked List" -> {
+                                mainItems.forEach { doubleLinkedList.add(it) }
+                                result = SearchUtils.doubleLinkedListSearch(
+                                    doubleLinkedList,
+                                    searchText.trim()
+                                ).toString()
+                            }
+                        }
+                        if (result == "null") {
+                            result = "Please enter a value or select an appropriate method"
+                        }
+                    }
+                }
+                LaunchedEffect(sorted) {
+                    if (sorted) {
+                        when (sortSelected) {
+                            "Bubble Sort" -> {
+                                SortUtils.bubbleSortStrings(mainItems)
+                            }
+
+                            "Insertion Sort" -> {
+
+                            }
+
+                            "Selection Sort" -> {
+
+                            }
+                        }
+                        if (result == "null") {
+                            result = "Please enter a value or select an appropriate method"
+                        }
+                    }
+
+                    }
+
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -144,18 +216,16 @@ class MainActivity : ComponentActivity() {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                DropdownMenuBox("Search Select", searchChoices)
-                DropdownMenuBox("Sort Select", sortChoices)
+                DropdownMenuBox( options = searchChoices, selected = searchSelected, onSelectedChange = {searchSelected = it})
+                DropdownMenuBox( options = sortChoices, selected = sortSelected, onSelectedChange = {sortSelected= it})
             }
         }
     }
     @Composable
-    fun DropdownMenuBox(label: String, options: Array<String>) {
+    fun DropdownMenuBox( options: Array<String>, selected: String, onSelectedChange: (String) -> Unit)  {
         var expanded by remember { mutableStateOf(false) }
-        var selected by remember { mutableStateOf(label) }
-
         Box {
-            Button(onClick = { expanded = true }) {
+            Button(onClick = { expanded = true}) {
                 Text(selected)
             }
 
@@ -163,11 +233,11 @@ class MainActivity : ComponentActivity() {
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
             ) {
-                listOf(options[0], options[1], options[2]).forEach {
+                options.forEach {
                     DropdownMenuItem(
                         text = { Text(it) },
                         onClick = {
-                            selected = it
+                            onSelectedChange(it)
                             expanded = false
                         }
                     )
@@ -175,7 +245,13 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
+    private fun insertBinTree(items: List<String>) :  BinarySearchTree<String>{
+        val i =  BinarySearchTree<String>()
+        items.forEach {
+            i.insert(value = it)
+        }
+        return i
+    }
     private suspend fun sendToBackend(text: String): String {
         return withContext(Dispatchers.IO) {
             try {

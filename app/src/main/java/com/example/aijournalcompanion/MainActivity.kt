@@ -39,7 +39,8 @@ import kotlin.collections.listOf
 
 class MainActivity : ComponentActivity() {
 
-    private val apiUrl = "http://192.168.198.1/emotion_parse"
+
+    private val analysePipe = PipeLine()
     private var searchChoices = arrayOf(
         "Binary Tree", "Hash-based(Map)", "Doubly Linked List"
     )
@@ -63,11 +64,11 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun MainScreen() {
+
         var mainItems by remember {   mutableStateOf(listOf<String>())}
         var inputText by remember { mutableStateOf("Enter the problems you are feeling to get advice") }
         var searchText by remember { mutableStateOf("Enter something to search") }
         var showChart by remember { mutableStateOf(false) }
-        var analysed by remember { mutableStateOf(false)  }
         var searched by remember { mutableStateOf(false)  }
         var sorted by remember { mutableStateOf(false)  }
         var help by remember { mutableStateOf(false) }
@@ -146,7 +147,6 @@ class MainActivity : ComponentActivity() {
             Spacer(modifier = Modifier.height(12.dp))
 
 
-            val test = listOf("sad","happy","angry","happy")
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -154,13 +154,8 @@ class MainActivity : ComponentActivity() {
                 val scope = rememberCoroutineScope()
                 Button(onClick = {
                     scope.launch {
-                        val input = inputText.trim()
-                        result = sendToBackend(input)
-                        mainItems += "$input | $result"
-                        Log.d("AI", "Analyse clicked")
-                        tree = insertBinTree(mainItems)
-                        hash = HashMap(mainItems.associateWith { it.length })
-                        mainItems.forEach { doubleLinkedList.add(it) }
+                        val input = inputText
+                        result = analysePipe.runPipeline(input,scope)
                     }
                 }) {
                     Text("Analyse")
@@ -176,18 +171,6 @@ class MainActivity : ComponentActivity() {
                 }
                 if (showChart){
                     EmotionChartPopup (data =mainItems, onDismiss = {showChart = false})
-                }
-                LaunchedEffect(analysed) {
-                    if (!analysed) return@LaunchedEffect
-                    analysed = false
-
-                    val input = inputText.trim()
-                    result =  sendToBackend(input)
-                    mainItems += "$input | $result"
-                    tree = insertBinTree(mainItems)
-                    hash = HashMap(mainItems.associateWith { it.length })
-                    mainItems.forEach { doubleLinkedList.add(it) }
-
                 }
 
             }
@@ -338,39 +321,9 @@ class MainActivity : ComponentActivity() {
 
     }
 
-    private fun insertBinTree(items: List<String>) :  BinarySearchTree<String>{
-        val i =  BinarySearchTree<String>()
-        items.forEach {
-            i.insert(value = it)
-        }
-        return i
-    }
 
-    private suspend fun sendToBackend(text: String): String {
-        return withContext(Dispatchers.IO) {
-            try {
-                val gson = Gson()
-                val uri = URI(apiUrl)
-                val conn = uri.toURL().openConnection() as HttpURLConnection
 
-                conn.requestMethod = "POST"
-                conn.setRequestProperty("Content-Type", "application/json")
-                conn.doOutput = true
 
-                val json = gson.toJson(mapOf("text" to text))
-                conn.outputStream.use {
-                    it.write(json.toByteArray())
-                }
-
-                val response = conn.inputStream.bufferedReader().readText()
-                val obj = gson.fromJson(response, Map::class.java)
-
-                obj["Advice"]?.toString() ?: "(No response)"
-            } catch (e: Exception) {
-                "Error: ${e.message}"
-            }
-        }
-    }
 
 
     @Composable

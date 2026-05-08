@@ -1,9 +1,10 @@
 package com.example.aijournalcompanion.DoublyLinkedList
 
-class DoublyLinkedList<T>{
+class DoublyLinkedList<T> {
     private var head: Node<T>? = null
     private var tail: Node<T>? = null
     private var size = 0
+
     fun add(value: T) {
         val newNode = Node(value)
 
@@ -29,6 +30,17 @@ class DoublyLinkedList<T>{
         }
 
         return -1
+    }
+    fun toList(): List<T> {
+        val result = mutableListOf<T>()
+        var current = head
+
+        while (current != null) {
+            result.add(current.value)
+            current = current.next
+        }
+
+        return result
     }
 }
 

@@ -5,13 +5,14 @@ app = FastAPI()
 class PromptInput(BaseModel): 
     text: str 
 @app.post("/emotion_parse") 
+
 def emotion_parse(input: PromptInput): 
     try: 
         response = requests.post( 
-            "http://localhost:11434/api/generate", 
+            "http://127.0.0.1:11434", 
             json={ 
             "model": "gemma:2b", 
-            "prompt": input.text,
+            "prompt": f"Write a one line response of advice and emotion displayed :{input.text}",
             "stream": False 
             } 
         ) 

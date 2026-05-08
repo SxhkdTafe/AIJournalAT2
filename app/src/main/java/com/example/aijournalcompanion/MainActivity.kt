@@ -1,19 +1,25 @@
 package com.example.aijournalcompanion
 
-
-import android.R
-import android.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.Color
 import android.os.Bundle
+import android.util.Log
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
@@ -29,19 +35,20 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.HttpURLConnection
 import java.net.URI
-import kotlin.collections.associateBy
 import kotlin.collections.listOf
 
 class MainActivity : ComponentActivity() {
 
-    private val apiUrl = "http://10.0.2.2:8000/emotion_parse"
+    private val apiUrl = "http://192.168.198.1/emotion_parse"
     private var searchChoices = arrayOf(
         "Binary Tree", "Hash-based(Map)", "Doubly Linked List"
     )
     private var sortChoices = arrayOf(
         "Bubble Sort", "Insertion Sort", "Selection Sort"
     )
-
+    var tree = BinarySearchTree<String>()
+    var hash: HashMap<String, Int> = HashMap()
+    var doubleLinkedList = DoublyLinkedList<String>()
 
 
 
@@ -49,6 +56,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
+
             MainScreen()
         }
     }
@@ -62,16 +70,47 @@ class MainActivity : ComponentActivity() {
         var analysed by remember { mutableStateOf(false)  }
         var searched by remember { mutableStateOf(false)  }
         var sorted by remember { mutableStateOf(false)  }
+        var help by remember { mutableStateOf(false) }
         var result by remember { mutableStateOf("") }
         var searchSelected by remember { mutableStateOf(searchChoices[0]) }
         var sortSelected by remember { mutableStateOf(sortChoices[0]) }
 
 
+        @Composable
+        fun LocalHtmlPopup(onDismiss: () -> Unit) {
+            if (help) {
+                Dialog(onDismissRequest = { help = false }) {
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight(0.9f)
+                    ) {
+                        AndroidView(factory = { context ->
+                            WebView(context).apply {
+                                webViewClient = WebViewClient()
+                                settings.javaScriptEnabled = true
+                                loadUrl("file:///android_asset/help.html")
+                            }
+                        })
+                    }
+                }
+            }
+        }
+        if (help) {
+            LocalHtmlPopup(onDismiss = { help = false })
+        }
+        LaunchedEffect(mainItems) {
+            tree = insertBinTree(mainItems)
 
-        mainItems = mainItems + ""
-        var tree = BinarySearchTree<String>()
-        var hash: HashMap<String, Int> = HashMap()
-        var doubleLinkedList = DoublyLinkedList<String>()
+            hash = HashMap(
+                mainItems.associateWith { it.length }
+            )
+
+            doubleLinkedList = DoublyLinkedList<String>().apply {
+                mainItems.forEach { add(it) }
+            }
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -79,15 +118,7 @@ class MainActivity : ComponentActivity() {
         ) {
 
 
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            ) {
-                items(mainItems) { mainItems->
-                    Text(mainItems)
-                }
-            }
+            viewBox(mainItems)
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -120,7 +151,18 @@ class MainActivity : ComponentActivity() {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Button(onClick = { analysed = true }) {
+                val scope = rememberCoroutineScope()
+                Button(onClick = {
+                    scope.launch {
+                        val input = inputText.trim()
+                        result = sendToBackend(input)
+                        mainItems += "$input | $result"
+                        Log.d("AI", "Analyse clicked")
+                        tree = insertBinTree(mainItems)
+                        hash = HashMap(mainItems.associateWith { it.length })
+                        mainItems.forEach { doubleLinkedList.add(it) }
+                    }
+                }) {
                     Text("Analyse")
                 }
 
@@ -129,19 +171,25 @@ class MainActivity : ComponentActivity() {
 
                 }
 
-                Button(onClick = { /* Help */ }) {
+                Button(onClick = { help = true }) {
                     Text("Help")
                 }
                 if (showChart){
-                    EmotionChartPopup (data = test, onDismiss = {showChart = false})
+                    EmotionChartPopup (data =mainItems, onDismiss = {showChart = false})
                 }
                 LaunchedEffect(analysed) {
-                    if (analysed){
-                        val input = inputText.trim()
-                        result =  sendToBackend(input)
-                        mainItems += "$input | $result"
-                    }
+                    if (!analysed) return@LaunchedEffect
+                    analysed = false
+
+                    val input = inputText.trim()
+                    result =  sendToBackend(input)
+                    mainItems += "$input | $result"
+                    tree = insertBinTree(mainItems)
+                    hash = HashMap(mainItems.associateWith { it.length })
+                    mainItems.forEach { doubleLinkedList.add(it) }
+
                 }
+
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -162,19 +210,16 @@ class MainActivity : ComponentActivity() {
                     if (searched) {
                         when (searchSelected) {
                             "Binary Tree" -> {
-                                tree = insertBinTree(mainItems)
                                 result =
                                     (SearchUtils.binTreeSearch(tree, searchText.trim())).toString()
                             }
 
                             "Hash-based(Map)" -> {
-                                hash = HashMap(mainItems.associateWith { it.length })
                                 result =
                                     SearchUtils.hashMapSearch(hash, searchText.trim()).toString()
                             }
 
                             "Doubly Linked List" -> {
-                                mainItems.forEach { doubleLinkedList.add(it) }
                                 result = SearchUtils.doubleLinkedListSearch(
                                     doubleLinkedList,
                                     searchText.trim()
@@ -187,27 +232,21 @@ class MainActivity : ComponentActivity() {
                     }
                 }
                 LaunchedEffect(sorted) {
-                    if (sorted) {
-                        when (sortSelected) {
-                            "Bubble Sort" -> {
-                                SortUtils.bubbleSortStrings(mainItems)
-                            }
-
-                            "Insertion Sort" -> {
-
-                            }
-
-                            "Selection Sort" -> {
-
-                            }
-                        }
-                        if (result == "null") {
-                            result = "Please enter a value or select an appropriate method"
-                        }
+                    if (!sorted) return@LaunchedEffect
+                    sorted = false
+                    val workingList = when (searchSelected) {
+                        "Binary Tree" -> tree.toList()
+                        "Doubly Linked List" -> doubleLinkedList.toList()
+                        "Hash-based(Map)" -> hash.keys.toList()
+                        else -> mainItems
                     }
-
+                    mainItems = when (sortSelected) {
+                        "Bubble Sort" -> SortUtils.bubbleSortStrings(workingList)
+                        "Insertion Sort" -> SortUtils.insertionSortStrings(workingList)
+                        "Selection Sort" -> SortUtils.selectionSortStrings(workingList)
+                        else -> workingList
                     }
-
+                }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -220,6 +259,58 @@ class MainActivity : ComponentActivity() {
                 DropdownMenuBox( options = sortChoices, selected = sortSelected, onSelectedChange = {sortSelected= it})
             }
         }
+
+
+    }
+    @Composable
+    fun viewBox(list: List<String>){
+        val items = remember { mutableStateListOf(*list.toTypedArray())}
+        var draggedItemIndex by remember { mutableStateOf<Int?>(null)}
+        LaunchedEffect(list) {
+            items.clear()
+            items.addAll(list)
+        }
+
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            itemsIndexed(items){ index, item ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                        .background(
+                            if (draggedItemIndex == index) Color.Gray else Color.LightGray
+                        )
+                        .pointerInput(Unit){
+                            detectDragGestures (
+                                onDragStart = {
+                                    draggedItemIndex = index
+                                },
+                                onDrag = { change, dragAmount ->
+                                    change.consume()
+
+                                },
+                                onDragEnd = {
+                                    if (draggedItemIndex == index){
+                                        items.removeAt(draggedItemIndex!!)
+                                        draggedItemIndex = null
+                                    }
+                                },
+                                onDragCancel = {
+                                    draggedItemIndex = null
+                                }
+                            )
+                        }
+
+                ){
+                    Text(text = item)
+                }
+
+            }
+        }
+
     }
     @Composable
     fun DropdownMenuBox( options: Array<String>, selected: String, onSelectedChange: (String) -> Unit)  {
@@ -244,7 +335,9 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
     }
+
     private fun insertBinTree(items: List<String>) :  BinarySearchTree<String>{
         val i =  BinarySearchTree<String>()
         items.forEach {
@@ -252,6 +345,7 @@ class MainActivity : ComponentActivity() {
         }
         return i
     }
+
     private suspend fun sendToBackend(text: String): String {
         return withContext(Dispatchers.IO) {
             try {
@@ -297,14 +391,14 @@ class MainActivity : ComponentActivity() {
         val grouped = data.groupingBy { it }.eachCount()
         val entries = grouped.map {(emotion, count) -> PieEntry(count.toFloat(), emotion) }
         val colors = listOf(
-            Color.RED,
-            Color.BLUE,
-            Color.GREEN,
-            Color.MAGENTA,
-            Color.CYAN,
-            Color.YELLOW,
-            Color.GRAY
-        )
+            Color.Red,
+            Color.Blue,
+            Color.Green,
+            Color.Magenta,
+            Color.Cyan,
+            Color.Yellow,
+            Color.Gray
+        ).map { it.toArgb() }
         AndroidView(factory = { context ->
             PieChart(context)},
             update = { chart ->

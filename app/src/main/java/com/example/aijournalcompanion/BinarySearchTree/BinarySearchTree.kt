@@ -26,4 +26,18 @@ package com.example.aijournalcompanion.BinarySearchTree
 
         return node
     }
+     fun toList(): List<T> {
+         val result = mutableListOf<T>()
+
+         fun inorder(node: Node<T>?) {
+             if (node == null) return
+
+             inorder(node.left)
+             result.add(node.value)
+             inorder(node.right)
+         }
+
+         inorder(root)
+         return result
+     }
 }

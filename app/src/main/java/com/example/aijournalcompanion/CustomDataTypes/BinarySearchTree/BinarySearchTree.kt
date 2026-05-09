@@ -1,4 +1,4 @@
-package com.example.aijournalcompanion.BinarySearchTree
+package com.example.aijournalcompanion.CustomDataTypes.BinarySearchTree
  class BinarySearchTree<T: Comparable<T>>() {
     var root: Node<T>? = null
     fun insert(value: T) {

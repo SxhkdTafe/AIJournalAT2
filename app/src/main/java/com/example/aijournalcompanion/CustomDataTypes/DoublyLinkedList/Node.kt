@@ -1,4 +1,4 @@
-package com.example.aijournalcompanion.DoublyLinkedList
+package com.example.aijournalcompanion.CustomDataTypes.DoublyLinkedList
 
 data class Node<T>(
     var value: T,

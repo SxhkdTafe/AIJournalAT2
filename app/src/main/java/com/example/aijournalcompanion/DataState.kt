@@ -1,7 +1,7 @@
 package com.example.aijournalcompanion
 
-import com.example.aijournalcompanion.BinarySearchTree.BinarySearchTree
-import com.example.aijournalcompanion.DoublyLinkedList.DoublyLinkedList
+import com.example.aijournalcompanion.CustomDataTypes.BinarySearchTree.BinarySearchTree
+import com.example.aijournalcompanion.CustomDataTypes.DoublyLinkedList.DoublyLinkedList
 
 data class DataState(
     val items: List<String>,
@@ -9,7 +9,16 @@ data class DataState(
     val hash: HashMap<String, Int>,
     val list: DoublyLinkedList<String>
 ){
+
     companion object{
+        fun from(items: List<String>): DataState {
+            return DataState(
+                items = items,
+                tree = insertBinTree(items),
+                hash = HashMap(items.associateWith { it.length }),
+                list = DoublyLinkedList<String>().apply { items.forEach { add(it) } }
+            )
+        }
         fun insertBinTree(items: List<String>) :  BinarySearchTree<String>{
             val i =  BinarySearchTree<String>()
             items.forEach {
@@ -28,5 +37,4 @@ data class DataState(
             )
         }
     }
-
 }

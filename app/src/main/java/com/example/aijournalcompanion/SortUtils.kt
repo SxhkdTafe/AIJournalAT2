@@ -1,10 +1,11 @@
 package com.example.aijournalcompanion
 
 import kotlin.collections.toMutableList
+import com.example.aijournalcompanion.UI.sortChoices
 
 class SortUtils {
     companion object{
-        fun bubbleSortStrings(inputList: Collection<String>) : List<String> {
+        private fun bubbleSortStrings(inputList: Collection<String>) : List<String> {
             val list = inputList.toMutableList()
             val n = list.size
             var swapped: Boolean
@@ -24,26 +25,21 @@ class SortUtils {
             }
             return list
         }
-        fun insertionSortStrings(inputList: Collection<String>) : List<String>{
+        private fun insertionSortStrings(inputList: Collection<String>) : List<String>{
             val list =  inputList.toMutableList()
-            val sortedList = mutableListOf<String>()
-            var currentElement = list [1]
-            var j = 1
-            while(j <= list.size){
-                if (currentElement.compareTo(list[j]) > 0){
-                    sortedList.add(list[j])
-                    currentElement = list[j]
-                    j++
+            val n = list.count()
+            for (i in 1 until n ){
+                val key = list[i]
+                var j = i -1
+                while (j >= 0 && list[j].compareTo(key) > 0){
+                    list[j+1] = list[j]
+                    j--
                 }
-                else{
-                    sortedList.add(currentElement)
-                    currentElement = list[j]
-                    j++
-                }
+                list[j+1] = key
             }
-            return sortedList
+            return list
         }
-        fun selectionSortStrings(inputList: Collection<String>): List<String>{
+        private fun selectionSortStrings(inputList: Collection<String>): List<String>{
             val list = inputList.toMutableList()
             for (i in 0 until list.size - 1) {
                 var minIndex = i
@@ -61,6 +57,13 @@ class SortUtils {
 
             return list
         }
-
+        fun sort(type: sortChoices, data: List<String>): List<String> {
+            return when (type) {
+                sortChoices.BubbleSort -> bubbleSortStrings(data)
+                sortChoices.InsertionSort -> insertionSortStrings(data)
+                sortChoices.SelectionSort -> selectionSortStrings(data)
+                sortChoices.DEFAULT -> data.sorted()
+            }
+        }
     }
 }

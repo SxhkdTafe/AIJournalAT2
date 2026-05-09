@@ -1,7 +1,7 @@
 package com.example.aijournalcompanion.API
 
 import com.google.gson.Gson
-import kotlinx.coroutines.Deferred
+import com.google.gson.JsonObject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.HttpURLConnection
@@ -9,7 +9,7 @@ import java.net.URI
 import kotlin.collections.get
 
 class Api {
-    suspend fun sendToBackend(text: String,apiUrl: String): String {
+    suspend fun sendToBackend(text: String,apiUrl: String): JsonObject {
         return withContext(Dispatchers.IO) {
             try {
                 val gson = Gson()
@@ -26,11 +26,11 @@ class Api {
                 }
 
                 val response = conn.inputStream.bufferedReader().readText()
-                val obj = gson.fromJson(response, Map::class.java)
-
-                obj["Advice"]?.toString() ?: "(No response)"
+                gson.fromJson(response, JsonObject::class.java)
             } catch (e: Exception) {
-                "Error: ${e.message}"
+                JsonObject().apply {
+                    addProperty("error", e.message)
+                }
             }
         }
     }

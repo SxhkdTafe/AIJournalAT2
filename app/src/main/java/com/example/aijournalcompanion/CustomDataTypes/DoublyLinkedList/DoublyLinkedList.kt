@@ -1,4 +1,4 @@
-package com.example.aijournalcompanion.DoublyLinkedList
+package com.example.aijournalcompanion.CustomDataTypes.DoublyLinkedList
 
 class DoublyLinkedList<T> {
     private var head: Node<T>? = null

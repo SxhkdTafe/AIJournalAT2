@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import requests
+import json
 
 app = FastAPI()
 
@@ -16,24 +17,19 @@ def emotion_parse(input: PromptInput):
             "http://127.0.0.1:11434/api/generate",
             json={
                 "model": "gemma:2b",
-                "prompt": f"""
-Return ONLY this format:
-
-Emotion: <emotion>
-Advice: <one line advice>
-
-Text: {input.text}
-""",
+                "prompt": 
+                f"""Return ONLY valid JSON in this exact format:{{"emotion": "<emotion>","advice": "<one line advice>"}}Input:{input.text}""",
                 "stream": False
             }
         )
-
         result = response.json()
+        raw = result.get("response", "{}")
+        parsed = json.loads(raw)
 
         return {
-            "Advice": result.get("response", "(No response)")
+            "emotion": parsed.get("emotion", "UNKNOWN"),
+            "advice": parsed.get("advice", "(No response)")
         }
-
     except Exception as e:
         return {
             "Advice": f"Error: {str(e)}"

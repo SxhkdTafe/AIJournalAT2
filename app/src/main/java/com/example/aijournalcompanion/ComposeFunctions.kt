@@ -35,7 +35,7 @@ import com.github.mikephil.charting.data.PieEntry
 
 class ComposeFunctions {
     @Composable
-    fun ViewBox(list: List<String>){
+    fun ViewBox(list: List<EmotionResponse>){
         var draggedItemIndex by remember { mutableStateOf<Int?>(null)}
         val items = mutableListOf(*list.toTypedArray())
 
@@ -72,7 +72,7 @@ class ComposeFunctions {
                             )
                         }
                 ){
-                    Text(text = item)
+                    Text(text = item.text)
                 }
             }
         }
@@ -103,7 +103,7 @@ class ComposeFunctions {
     }
 
     @Composable
-    fun EmotionChartPopup(data: List<String>, onDismiss: () -> Unit){
+    fun EmotionChartPopup(data: List<EmotionResponse>, onDismiss: () -> Unit){
         Dialog(onDismissRequest = onDismiss){
             Surface(modifier = Modifier
                 .fillMaxWidth(0.95f)
@@ -132,8 +132,8 @@ class ComposeFunctions {
         }
     }
     @Composable
-    fun EmotionPieChart(data: List<String>) {
-        val grouped = data.groupingBy { it }.eachCount()
+    fun EmotionPieChart(data: List<EmotionResponse>) {
+        val grouped = data. groupingBy { it.emotion }.eachCount()
         val entries = grouped.map {(emotion, count) -> PieEntry(count.toFloat(), emotion) }
         val colors = listOf(
             Color.Red,

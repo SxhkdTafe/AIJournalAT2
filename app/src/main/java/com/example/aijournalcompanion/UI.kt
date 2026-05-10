@@ -1,13 +1,13 @@
 package com.example.aijournalcompanion
 class UI{
     enum class searchChoices{
-        DEFAULT,
+        SelectSearchChoice,
         BinaryTree,
         HashBasedMap,
         DoublyLinkedList
     }
     enum class sortChoices{
-        DEFAULT,
+        SelectSortChoice,
         BubbleSort,
         InsertionSort,
         SelectionSort

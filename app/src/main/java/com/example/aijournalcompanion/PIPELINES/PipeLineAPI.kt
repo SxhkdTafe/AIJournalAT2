@@ -2,12 +2,7 @@ package com.example.aijournalcompanion.PIPELINES
 
 import com.example.aijournalcompanion.API.Api
 import com.example.aijournalcompanion.EmotionResponse
-import com.example.aijournalcompanion.MainActivity
-import com.google.gson.Gson
-import com.google.gson.JsonObject
-
-
-class PipeLine {
+class PipeLineAPI {
     private val apiUrl = "http://10.0.2.2:8000/emotion_parse"
     private val call = Api()
     private suspend fun trimInput(input: String) : String{

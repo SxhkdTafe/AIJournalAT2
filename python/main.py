@@ -18,7 +18,7 @@ def emotion_parse(input: PromptInput):
             json={
                 "model": "gemma:2b",
                 "prompt": 
-                f"""Return ONLY valid JSON in this exact format:{{"emotion": "<emotion>","advice": "<one line advice>"}}Input:{input.text}""",
+                f"""Return ONLY valid JSON in this exact format:{{"Emotion": "<emotion>","Advice": "<one line advice>"}}Input:{input.text}""",
                 "stream": False
             }
         )
@@ -27,8 +27,8 @@ def emotion_parse(input: PromptInput):
         parsed = json.loads(raw)
 
         return {
-            "emotion": parsed.get("emotion", "UNKNOWN"),
-            "advice": parsed.get("advice", "(No response)")
+            "Emotion": parsed.get("Emotion", "UNKNOWN"),
+            "Advice": parsed.get("Advice", "(No response)")
         }
     except Exception as e:
         return {

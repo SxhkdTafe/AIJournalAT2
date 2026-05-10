@@ -5,7 +5,7 @@ import com.example.aijournalcompanion.UI.sortChoices
 
 class SortUtils {
     companion object{
-        private fun bubbleSortStrings(inputList: Collection<String>) : List<String> {
+        private fun bubbleSortStrings(inputList: Collection<EmotionResponse>) : List<EmotionResponse> {
             val list = inputList.toMutableList()
             val n = list.size
             var swapped: Boolean
@@ -13,7 +13,7 @@ class SortUtils {
             for (i in 0 until n - 1) {
                 swapped = false
                 for (j in 0 until n - i - 1) {
-                    if (list[j] > list[j + 1]) {
+                    if (list[j].emotion > list[j + 1].emotion) {
 
                         val temp = list[j]
                         list[j] = list[j + 1]
@@ -25,13 +25,13 @@ class SortUtils {
             }
             return list
         }
-        private fun insertionSortStrings(inputList: Collection<String>) : List<String>{
+        private fun insertionSortStrings(inputList: Collection<EmotionResponse>) : List<EmotionResponse>{
             val list =  inputList.toMutableList()
             val n = list.count()
             for (i in 1 until n ){
                 val key = list[i]
                 var j = i -1
-                while (j >= 0 && list[j].compareTo(key) > 0){
+                while (j >= 0 && list[j].emotion.compareTo(key.emotion) > 0){
                     list[j+1] = list[j]
                     j--
                 }
@@ -39,13 +39,13 @@ class SortUtils {
             }
             return list
         }
-        private fun selectionSortStrings(inputList: Collection<String>): List<String>{
+        private fun selectionSortStrings(inputList: Collection<EmotionResponse>): List<EmotionResponse>{
             val list = inputList.toMutableList()
             for (i in 0 until list.size - 1) {
                 var minIndex = i
 
                 for (j in i + 1 until list.size) {
-                    if (list[j] < list[minIndex]) {
+                    if (list[j].emotion < list[minIndex].emotion) {
                         minIndex = j
                     }
                 }
@@ -57,12 +57,12 @@ class SortUtils {
 
             return list
         }
-        fun sort(type: sortChoices, data: List<String>): List<String> {
+        fun sort(type: sortChoices, data: List<EmotionResponse>): List<EmotionResponse> {
             return when (type) {
-                sortChoices.BubbleSort -> bubbleSortStrings(data)
+                sortChoices.BubbleSort -> bubbleSortStrings( data)
                 sortChoices.InsertionSort -> insertionSortStrings(data)
                 sortChoices.SelectionSort -> selectionSortStrings(data)
-                sortChoices.DEFAULT -> data.sorted()
+                sortChoices.SelectSortChoice -> data
             }
         }
     }

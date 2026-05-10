@@ -9,9 +9,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.example.aijournalcompanion.PIPELINES.Builder
 import com.example.aijournalcompanion.PIPELINES.Context
-import com.example.aijournalcompanion.PIPELINES.PipeLine
-import com.example.aijournalcompanion.PIPELINES.PipelineBuilder
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -25,43 +24,13 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun  MainScreen() {
         val elements = ComposeFunctions()
-        val api = PipeLine()
         val scope = rememberCoroutineScope()
         val context = remember(scope) {
             Context(
-                input = "",
+                input = ""
             )
         }
-        val analysePipeLine = remember {
-            PipelineBuilder().apply {
-                consumeInputUI(Context.InputField.Journal)
-                backEndToFront { input-> api.runPipeline(input)
-                }
-                updateExternalData()
-            }
-        }
-        val searchPipeLine = remember {
-            PipelineBuilder().apply {
-                consumeInputUI(Context.InputField.Search)
-                search()
-            }
-        }
-        val sortPipeLine = remember {
-            PipelineBuilder().apply {
-                sort()
-            }
-        }
-        val helpPipeLine = remember {
-            PipelineBuilder().apply {
-                displayHelp()
-            }
-        }
-        val chartPipeLine = remember {
-            PipelineBuilder().apply {
-                displayChart()
-            }
-        }
-
+        val pipelines = Builder.build()
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -73,7 +42,7 @@ class MainActivity : ComponentActivity() {
                 }
             }
             if(context.showChart){
-                elements.EmotionChartPopup (data =context.emotions, {context.showChart = false})
+                elements.EmotionChartPopup (data =context.data.items, {context.showChart = false})
             }
 
             elements.ViewBox(context.data.items)
@@ -93,14 +62,16 @@ class MainActivity : ComponentActivity() {
                 onValueChange = { context.journalInput = it },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-
+                placeholder = {Text("Please enter the emotion you are feeling to get advice.")}
             )
             Spacer(modifier = Modifier.height(1.dp))
             TextField(
                 value = context.searchInput,
                 onValueChange = { context.searchInput = it },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                singleLine = true,
+
+                placeholder = {Text("Please enter the emotion you want to search")}
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -111,21 +82,21 @@ class MainActivity : ComponentActivity() {
             ) {
                 Button(onClick = {
                     scope.launch {
-                        analysePipeLine.run(context)
+                        pipelines.analyse.run(context)
                     }
                 }) {
                     Text("Analyse")
                 }
                 Button(onClick = {
                     scope.launch {
-                        chartPipeLine.run(context)
+                       pipelines.chart.run(context)
                     }
                 }) {
                     Text("Show Chart")
                 }
                 Button(onClick = {
                     scope.launch {
-                        helpPipeLine.run(context)
+                        pipelines.help.run(context)
                     }
                 }) {
                     Text("Help")
@@ -139,14 +110,14 @@ class MainActivity : ComponentActivity() {
             ) {
                 Button(onClick = {
                     scope.launch {
-                        searchPipeLine.run(context)
+                        pipelines.search.run(context)
                     }
                 }) {
                     Text("Search")
                 }
                 Button(onClick = {
                     scope.launch {
-                        sortPipeLine.run(context)
+                        pipelines.sort.run(context)
                     }
                 }) {
                     Text("Sort")
@@ -158,11 +129,11 @@ class MainActivity : ComponentActivity() {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 elements.DropdownMenuBox(
-                    options = UI.searchChoices.entries.map {it.name}.toTypedArray(),
+                    options = UI.searchChoices.entries.filter { it != UI.searchChoices.SelectSearchChoice } .map {it.name}.toTypedArray(),
                     selected = context.searchSelected.name,
                     onSelectedChange = {selectedName -> context.searchSelected = UI.searchChoices.valueOf(selectedName)})
                 elements.DropdownMenuBox(
-                    options = UI.sortChoices.entries.map {it.name}.toTypedArray(),
+                    options = UI.sortChoices.entries.filter { it != UI.sortChoices.SelectSortChoice } .map {it.name}.toTypedArray(),
                     selected = context.sortSelected.name,
                     onSelectedChange = {selectedName -> context.sortSelected = UI.sortChoices.valueOf(selectedName)})
             }

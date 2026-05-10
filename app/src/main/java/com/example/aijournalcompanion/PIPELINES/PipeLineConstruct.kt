@@ -2,26 +2,27 @@ package com.example.aijournalcompanion.PIPELINES
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.example.aijournalcompanion.DataState
 import com.example.aijournalcompanion.SearchUtils
 import com.example.aijournalcompanion.SortUtils
 import com.example.aijournalcompanion.UI
 import com.example.aijournalcompanion.EmotionResponse
+import com.example.aijournalcompanion.searchContext
 
 class Context(
     var input: String = "",
     ){
-    var searchSelected by mutableStateOf(UI.searchChoices.DEFAULT)
-    var sortSelected by mutableStateOf(UI.sortChoices.DEFAULT)
+    var searchSelected by mutableStateOf(UI.searchChoices.SelectSearchChoice)
+    var sortSelected by mutableStateOf(UI.sortChoices.SelectSortChoice)
     var journalInput by mutableStateOf("")
     var searchInput by mutableStateOf("")
     var result by mutableStateOf("")
-    var data by mutableStateOf(DataState.Companion.from(emptyList()))
+    var data by mutableStateOf(DataState.from(emptyList()))
     var showHelp by mutableStateOf(false)
     var showChart by mutableStateOf(false)
-    var emotions = mutableListOf<String>()
+    var lastResponse: EmotionResponse? = null
+
     enum class InputField {
         Journal,
         Search
@@ -44,17 +45,23 @@ class PipelineBuilder {
         steps +={
             val res = pipeline(input)
             result = res.text
-            emotions.add(res.emotion)
+            lastResponse = res
         }
     }
     fun updateExternalData( ){
         steps += {
-            data = DataState.update(data,result)
+            lastResponse?.let {
+                data = DataState.update(data,it)
+            }
         }
     }
     fun search(){
         steps +={
-            result = SearchUtils.search(searchSelected,input,data)
+            val ctx = searchContext(
+                type = searchSelected,
+                data = data
+            )
+            result = SearchUtils.pipe(input, ctx)
         }
     }
     fun sort(){

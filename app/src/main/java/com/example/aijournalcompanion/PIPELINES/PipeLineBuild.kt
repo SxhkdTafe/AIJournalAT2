@@ -25,7 +25,7 @@ data class PipeLine(
                     updateExternalData()
                 },
                 search = PipelineBuilder().apply {
-                    consumeInputUI(Context.InputField.Journal)
+                    consumeInputUI(Context.InputField.Search)
                     search()
                 },
                 sort = PipelineBuilder().apply {

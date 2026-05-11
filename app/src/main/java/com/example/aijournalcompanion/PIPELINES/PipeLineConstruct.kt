@@ -33,6 +33,10 @@ class Context(
             InputField.Search -> searchInput
         }
     }
+    fun deleteItem(index: Int) {
+        val newItems = data.items.toMutableList().also { it.removeAt(index) }
+        data = DataState.from(newItems)
+    }
 }
 class PipelineBuilder {
     val steps = mutableListOf<suspend Context.() -> Unit>()
@@ -64,6 +68,7 @@ class PipelineBuilder {
             result = SearchUtils.pipe(input, ctx)
         }
     }
+
     fun sort(){
         steps +={
             data = DataState.from(SortUtils.sort(sortSelected,data.items))

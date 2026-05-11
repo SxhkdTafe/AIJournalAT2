@@ -45,7 +45,7 @@ class MainActivity : ComponentActivity() {
                 elements.EmotionChartPopup (data =context.data.items, {context.showChart = false})
             }
 
-            elements.ViewBox(context.data.items)
+            elements.ViewBox(context.data.items, context)
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -56,7 +56,6 @@ class MainActivity : ComponentActivity() {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-
             TextField(
                 value = context.journalInput,
                 onValueChange = { context.journalInput = it },
@@ -64,6 +63,7 @@ class MainActivity : ComponentActivity() {
                 singleLine = true,
                 placeholder = {Text("Please enter the emotion you are feeling to get advice.")}
             )
+
             Spacer(modifier = Modifier.height(1.dp))
             TextField(
                 value = context.searchInput,

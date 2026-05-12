@@ -18,6 +18,13 @@ class PipeLineAPI {
         val json = call.sendToBackend(input, apiUrl)
         val emotion = json.get("Emotion")?.asString ?: "UNKNOWN"
         val advice = json.get("Advice")?.asString ?: ""
+        if (json.has("error")){
+            return EmotionResponse(
+                emotion = "ERROR",
+                advice = json.get("error").asString,
+                text = "Backend error"
+            )
+        }
         return EmotionResponse(
             emotion = emotion,
             advice = advice,

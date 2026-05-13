@@ -2,6 +2,7 @@ package com.example.aijournalcompanion
 
 import com.example.aijournalcompanion.CustomDataTypes.BinarySearchTree.BinarySearchTree
 import com.example.aijournalcompanion.CustomDataTypes.BinarySearchTree.Node
+import com.example.aijournalcompanion.CustomDataTypes.DataState
 import com.example.aijournalcompanion.CustomDataTypes.DoublyLinkedList.DoublyLinkedList
 import com.example.aijournalcompanion.UI.searchChoices
 data class searchContext(

@@ -3,64 +3,82 @@ package com.example.aijournalcompanion.PIPELINES
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.example.aijournalcompanion.DataState
+import com.example.aijournalcompanion.CustomDataTypes.DataState
 import com.example.aijournalcompanion.SearchUtils
 import com.example.aijournalcompanion.SortUtils
 import com.example.aijournalcompanion.UI
 import com.example.aijournalcompanion.EmotionResponse
 import com.example.aijournalcompanion.searchContext
+import com.example.aijournalcompanion.Logger.logTaskMainPipe
 
+// Global Mutable bag of all objects in UI
 class Context(
+    // User input String
     var input: String = "",
     ){
+    // Drop Down Box Variables
     var searchSelected by mutableStateOf(UI.searchChoices.SelectSearchChoice)
     var sortSelected by mutableStateOf(UI.sortChoices.SelectSortChoice)
+    // Text Field Variables
     var journalInput by mutableStateOf("")
     var searchInput by mutableStateOf("")
+    // OutPut TextBox Variable
     var result by mutableStateOf("")
+    // Instance Variable of DataState class containing dataTypes
     var data by mutableStateOf(DataState.from(emptyList()))
+    // Bool Variables mutating if respective button clicked
     var showHelp by mutableStateOf(false)
     var showChart by mutableStateOf(false)
+    // Instance of Class for accessing parsed json objects
     var lastResponse: EmotionResponse? = null
-
+    // Delegate enum
     enum class InputField {
         Journal,
         Search
     }
+    // Delegate function to decide input Field for pipeline
     fun activeVal (v: InputField): String{
         return when(v){
             InputField.Journal -> journalInput
             InputField.Search -> searchInput
         }
     }
+    // Func for deleting item internally from ViewBox
     fun deleteItem(index: Int) {
         val newItems = data.items.toMutableList().also { it.removeAt(index) }
         data = DataState.from(newItems)
     }
 }
 class PipelineBuilder {
+    // Command Queue for pipeline
     val steps = mutableListOf<suspend Context.() -> Unit>()
+
+    // Selects Input Consumed for output variable
     fun consumeInputUI(v: Context.InputField){
-        steps +={
+        steps += logTaskMainPipe("GET input field"){
             input = activeVal(v)
         }
     }
+    // Calls and sends input to API pipeline for result
     fun backEndToFront(pipeline: suspend (String) -> EmotionResponse) {
-        steps +={
+        steps += logTaskMainPipe("Command Queue API PIPE"){
             val res = pipeline(input)
             result = res.text
+            // Extracts Object to be manipulated in other funcs
             lastResponse = res
         }
     }
+    // Replaces current data with reconstructed data containing updated data
     fun updateExternalData( ){
-        steps += {
+        steps += logTaskMainPipe("Update Data") {
             lastResponse?.let {
-                data = DataState.update(data,it)
+                data = DataState.update(data, it)
             }
         }
     }
+    // Calls the Search pipe that mutates depending upon searchSelected
     fun search(){
-        steps +={
+        steps += logTaskMainPipe("Search") {
             val ctx = searchContext(
                 type = searchSelected,
                 data = data
@@ -68,22 +86,25 @@ class PipelineBuilder {
             result = SearchUtils.pipe(input, ctx)
         }
     }
-
+    // Sorts Data of List
     fun sort(){
-        steps +={
-            data = DataState.from(SortUtils.sort(sortSelected,data.items))
+        steps += logTaskMainPipe("Sort") {
+            data = DataState.from(SortUtils.sort(sortSelected, data.items))
         }
     }
+    // Flips the Bool to control if help popup shows
     fun displayHelp(){
-        steps +={
+        steps += logTaskMainPipe("Help Bool Flip"){
             showHelp = true
         }
     }
+    // Flips the Bool to control if chart popup shows
     fun displayChart(){
-        steps +={
+        steps += logTaskMainPipe("Chart bool Flip"){
             showChart = true
         }
     }
+    // Executes compiled steps in pipeline in order
     suspend fun run(context: Context){
         for(step in steps){
             context.step()

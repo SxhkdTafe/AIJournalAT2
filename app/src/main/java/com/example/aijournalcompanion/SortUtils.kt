@@ -57,12 +57,12 @@ class SortUtils {
 
             return list
         }
-        fun sort(type: sortChoices, data: List<EmotionResponse>): List<EmotionResponse> {
+        fun sort(type: sortChoices, data: Collection<EmotionResponse>): List<EmotionResponse> {
             return when (type) {
                 sortChoices.BubbleSort -> bubbleSortStrings( data)
                 sortChoices.InsertionSort -> insertionSortStrings(data)
                 sortChoices.SelectionSort -> selectionSortStrings(data)
-                sortChoices.SelectSortChoice -> data
+                sortChoices.SelectSortChoice -> data.toList()
             }
         }
     }

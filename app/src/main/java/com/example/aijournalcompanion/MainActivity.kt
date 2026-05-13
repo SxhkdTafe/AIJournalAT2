@@ -23,13 +23,16 @@ class MainActivity : ComponentActivity() {
     }
     @Composable
     fun  MainScreen() {
+        // Custom Compose Objects initialization
         val elements = ComposeFunctions()
+        // Coroutine for entire proj
         val scope = rememberCoroutineScope()
         val context = remember(scope) {
             Context(
                 input = ""
             )
         }
+        // Makes pipes for button actions
         val pipelines = Builder.build()
         Column(
             modifier = Modifier
@@ -37,40 +40,47 @@ class MainActivity : ComponentActivity() {
                 .padding(16.dp)
         ) {
             if (context.showHelp){
+                // Displays Help Html page popup
                 elements.LocalHtmlPopup {
                     context.showHelp = false
                 }
             }
             if(context.showChart){
-                elements.EmotionChartPopup (data =context.data.items, {context.showChart = false})
+                // Displays pie chart of prev emotions in data
+                elements.EmotionChartPopup (data = context.data.items, {context.showChart = false})
             }
-
+            // List View of all api call items in memory
             elements.ViewBox(context.data.items, context)
 
             Spacer(modifier = Modifier.height(12.dp))
-
+            // Read only Result Text box
             Text(
                 text = context.result,
                 modifier = Modifier.fillMaxWidth()
             )
 
             Spacer(modifier = Modifier.height(8.dp))
-
+            // User emotion input field
             TextField(
+                // Assigns input field to internal var of pipeLineConstruct Class
                 value = context.journalInput,
                 onValueChange = { context.journalInput = it },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
+                // Flavour Text
                 placeholder = {Text("Please enter the emotion you are feeling to get advice.")}
             )
 
             Spacer(modifier = Modifier.height(1.dp))
+
+            // User Search for emotion input field
             TextField(
+                // Assigns input field to internal var of pipeLineConstruct Class
                 value = context.searchInput,
                 onValueChange = { context.searchInput = it },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-
+                // Flavour Text
                 placeholder = {Text("Please enter the emotion you want to search")}
             )
 
@@ -82,6 +92,7 @@ class MainActivity : ComponentActivity() {
             ) {
                 Button(onClick = {
                     scope.launch {
+                        // Executes the preConfigured Analyze PipeLine
                         pipelines.analyse.run(context)
                     }
                 }) {
@@ -89,6 +100,7 @@ class MainActivity : ComponentActivity() {
                 }
                 Button(onClick = {
                     scope.launch {
+                        // Executes the preConfigured Chart PipeLine
                        pipelines.chart.run(context)
                     }
                 }) {
@@ -96,6 +108,7 @@ class MainActivity : ComponentActivity() {
                 }
                 Button(onClick = {
                     scope.launch {
+                        // Executes the preConfigured Help PipeLine
                         pipelines.help.run(context)
                     }
                 }) {
@@ -110,6 +123,7 @@ class MainActivity : ComponentActivity() {
             ) {
                 Button(onClick = {
                     scope.launch {
+                        // Executes the preConfigured Search PipeLine
                         pipelines.search.run(context)
                     }
                 }) {
@@ -117,6 +131,7 @@ class MainActivity : ComponentActivity() {
                 }
                 Button(onClick = {
                     scope.launch {
+                        // Executes the preConfigured Sort PipeLine
                         pipelines.sort.run(context)
                     }
                 }) {
@@ -128,12 +143,19 @@ class MainActivity : ComponentActivity() {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
+                // Search DropDownBox
                 elements.DropdownMenuBox(
+                    // Sets Displayed options to search Enum options
                     options = UI.searchChoices.entries.filter { it != UI.searchChoices.SelectSearchChoice } .map {it.name}.toTypedArray(),
+                    // Assigns Selected Choice to internal var of pipeLineConstruct Class
                     selected = context.searchSelected.name,
                     onSelectedChange = {selectedName -> context.searchSelected = UI.searchChoices.valueOf(selectedName)})
+
+                // Sort DropDownBox
                 elements.DropdownMenuBox(
+                    // Sets Displayed options to sort Enum options
                     options = UI.sortChoices.entries.filter { it != UI.sortChoices.SelectSortChoice } .map {it.name}.toTypedArray(),
+                    // Assigns Selected Choice to internal var of pipeLineConstruct Class
                     selected = context.sortSelected.name,
                     onSelectedChange = {selectedName -> context.sortSelected = UI.sortChoices.valueOf(selectedName)})
             }

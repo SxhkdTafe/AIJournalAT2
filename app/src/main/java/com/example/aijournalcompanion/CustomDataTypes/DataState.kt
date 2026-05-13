@@ -1,7 +1,8 @@
-package com.example.aijournalcompanion
+package com.example.aijournalcompanion.CustomDataTypes
 
 import com.example.aijournalcompanion.CustomDataTypes.BinarySearchTree.BinarySearchTree
 import com.example.aijournalcompanion.CustomDataTypes.DoublyLinkedList.DoublyLinkedList
+import com.example.aijournalcompanion.EmotionResponse
 
 data class DataState(
     val items: List<EmotionResponse>,
@@ -18,8 +19,8 @@ data class DataState(
                 list = DoublyLinkedList<String>().apply { items.forEach { add(it.emotion) } }
             )
         }
-        fun insertBinTree(items: List<EmotionResponse>) :  BinarySearchTree<String>{
-            val i =  BinarySearchTree<String>()
+        fun insertBinTree(items: List<EmotionResponse>) : BinarySearchTree<String> {
+            val i = BinarySearchTree<String>()
             items.forEach {
                 i.insert(value = it.emotion)
             }

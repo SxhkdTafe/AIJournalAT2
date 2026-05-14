@@ -9,8 +9,8 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.aijournalcompanion.PIPELINES.Builder
-import com.example.aijournalcompanion.PIPELINES.Context
+import com.example.aijournalcompanion.PipeLine.Builder
+import com.example.aijournalcompanion.PipeLine.Context
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -47,10 +47,10 @@ class MainActivity : ComponentActivity() {
             }
             if(context.showChart){
                 // Displays pie chart of prev emotions in data
-                elements.EmotionChartPopup (data = context.data.items, {context.showChart = false})
+                elements.EmotionChartPopup (state = context.data, {context.showChart = false})
             }
             // List View of all api call items in memory
-            elements.ViewBox(context.data.items, context)
+            elements.ViewBox(context.data, onDelete = {item -> context.deleteItem(item)})
 
             Spacer(modifier = Modifier.height(12.dp))
             // Read only Result Text box

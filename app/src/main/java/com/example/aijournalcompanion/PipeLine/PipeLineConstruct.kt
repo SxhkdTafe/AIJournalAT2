@@ -1,14 +1,14 @@
-package com.example.aijournalcompanion.PIPELINES
+package com.example.aijournalcompanion.PipeLine
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import com.example.aijournalcompanion.CustomDataTypes.DataState
-import com.example.aijournalcompanion.SearchUtils
-import com.example.aijournalcompanion.SortUtils
+import com.example.aijournalcompanion.DataStructs.DataState
+import com.example.aijournalcompanion.Utils.SearchUtils
+import com.example.aijournalcompanion.Utils.SortUtils
 import com.example.aijournalcompanion.UI
-import com.example.aijournalcompanion.EmotionResponse
-import com.example.aijournalcompanion.searchContext
+import com.example.aijournalcompanion.DataStructs.EmotionResponse
+import com.example.aijournalcompanion.Utils.searchContext
 import com.example.aijournalcompanion.Logger.logTaskMainPipe
 
 // Global Mutable bag of all objects in UI
@@ -25,7 +25,7 @@ class Context(
     // OutPut TextBox Variable
     var result by mutableStateOf("")
     // Instance Variable of DataState class containing dataTypes
-    var data by mutableStateOf(DataState.from(emptyList()))
+    var data by mutableStateOf(DataState.from())
     // Bool Variables mutating if respective button clicked
     var showHelp by mutableStateOf(false)
     var showChart by mutableStateOf(false)
@@ -44,9 +44,12 @@ class Context(
         }
     }
     // Func for deleting item internally from ViewBox
-    fun deleteItem(index: Int) {
-        val newItems = data.items.toMutableList().also { it.removeAt(index) }
-        data = DataState.from(newItems)
+    fun deleteItem(item: EmotionResponse) {
+        data.delete(item)
+
+        data = DataState.rebuild(
+            data.tree.toList()
+        )
     }
 }
 class PipelineBuilder {
@@ -66,14 +69,7 @@ class PipelineBuilder {
             result = res.text
             // Extracts Object to be manipulated in other funcs
             lastResponse = res
-        }
-    }
-    // Replaces current data with reconstructed data containing updated data
-    fun updateExternalData( ){
-        steps += logTaskMainPipe("Update Data") {
-            lastResponse?.let {
-                data = DataState.update(data, it)
-            }
+            data = DataState.rebuild(data.toList() + res)
         }
     }
     // Calls the Search pipe that mutates depending upon searchSelected
@@ -89,7 +85,7 @@ class PipelineBuilder {
     // Sorts Data of List
     fun sort(){
         steps += logTaskMainPipe("Sort") {
-            data = DataState.from(SortUtils.sort(sortSelected, data.items))
+            data = DataState.rebuild(SortUtils.sort(sortSelected, searchSelected, data))
         }
     }
     // Flips the Bool to control if help popup shows

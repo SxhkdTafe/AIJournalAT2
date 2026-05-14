@@ -1,6 +1,6 @@
 package com.example.aijournalcompanion
 
-import com.example.aijournalcompanion.PIPELINES.Context
+import com.example.aijournalcompanion.PipeLine.Context
 import kotlinx.datetime.Clock
 
 object Logger{

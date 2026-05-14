@@ -1,9 +1,11 @@
-package com.example.aijournalcompanion
+package com.example.aijournalcompanion.Utils
 
+import androidx.compose.runtime.key
 import com.example.aijournalcompanion.CustomDataTypes.BinarySearchTree.BinarySearchTree
 import com.example.aijournalcompanion.CustomDataTypes.BinarySearchTree.Node
-import com.example.aijournalcompanion.CustomDataTypes.DataState
+import com.example.aijournalcompanion.DataStructs.DataState
 import com.example.aijournalcompanion.CustomDataTypes.DoublyLinkedList.DoublyLinkedList
+import com.example.aijournalcompanion.DataStructs.EmotionResponse
 import com.example.aijournalcompanion.UI.searchChoices
 data class searchContext(
     val type: searchChoices,
@@ -11,27 +13,25 @@ data class searchContext(
 )
 class SearchUtils {
     companion object {
-        private fun <T : Comparable<T>> binTreeSearch(
-            tree: BinarySearchTree<T>,
-            target: T
-        ): Node<T>? {
-            return tree.search(target)
-        }
-        private fun <K, V> hashMapSearch(map : HashMap<K,V>, target: K) : V?{
-            return map[target]
-        }
-        private fun <T> doubleLinkedListSearch(list : DoublyLinkedList<T>,target: T) : Int{
-            return list.indexOf(target)
-        }
+
         private fun transform( input: String): String{
             return input.trim().lowercase()
         }
-        private fun search(input: String,searchContext: searchContext): String {
-            return when (searchContext.type) {
-                searchChoices.BinaryTree -> binTreeSearch(searchContext.data.tree, input)?.toString() ?: "null: Not found"
-                searchChoices.HashBasedMap -> hashMapSearch(searchContext.data.hash, input)?.toString() ?:"null: Not found"
+        private fun search(input: String,ctx: searchContext): String {
+            val key = EmotionResponse(emotion = input, advice = "", text = "")
+            return when (ctx.type) {
+                searchChoices.BinaryTree -> {
+                    val res = ctx.data.tree.searchByEmotion(input)
+                    if ( res != null){
+                        "${res.value.emotion} Found"
+                    }
+                    else{
+                        "null: Not found"
+                    }
+                }
+                searchChoices.HashBasedMap -> ctx.data.hash[key]?.toString() ?:"null: Not found"
                 searchChoices.DoublyLinkedList ->{
-                    val r = doubleLinkedListSearch(searchContext.data.list, input)
+                    val r = ctx.data.list.indexOfEmotion(input)
                     if(r == -1){
                         "null: Not found"
                     }

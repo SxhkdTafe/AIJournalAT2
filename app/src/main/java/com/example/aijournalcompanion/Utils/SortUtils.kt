@@ -1,7 +1,11 @@
-package com.example.aijournalcompanion
+package com.example.aijournalcompanion.Utils
 
+import com.example.aijournalcompanion.DataStructs.DataState
+import com.example.aijournalcompanion.DataStructs.EmotionResponse
+import com.example.aijournalcompanion.UI
 import kotlin.collections.toMutableList
 import com.example.aijournalcompanion.UI.sortChoices
+import com.example.aijournalcompanion.UI.searchChoices
 
 class SortUtils {
     companion object{
@@ -57,12 +61,18 @@ class SortUtils {
 
             return list
         }
-        fun sort(type: sortChoices, data: Collection<EmotionResponse>): List<EmotionResponse> {
+        fun sort(type: sortChoices, datatype: searchChoices, inputData: DataState): List<EmotionResponse> {
+            val data : List<EmotionResponse> = when (datatype){
+                searchChoices.BinaryTree -> inputData.tree.toList()
+                searchChoices.HashBasedMap -> inputData.hash.keys.toList()
+                searchChoices.DoublyLinkedList -> inputData.list.toList()
+                searchChoices.SelectSearchChoice -> inputData.list.toList()
+            }
             return when (type) {
                 sortChoices.BubbleSort -> bubbleSortStrings( data)
                 sortChoices.InsertionSort -> insertionSortStrings(data)
                 sortChoices.SelectionSort -> selectionSortStrings(data)
-                sortChoices.SelectSortChoice -> data.toList()
+                sortChoices.SelectSortChoice -> data
             }
         }
     }

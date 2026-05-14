@@ -1,5 +1,7 @@
 package com.example.aijournalcompanion.CustomDataTypes.DoublyLinkedList
 
+import com.example.aijournalcompanion.DataStructs.EmotionResponse
+
 class DoublyLinkedList<T> {
     private var head: Node<T>? = null
     private var tail: Node<T>? = null
@@ -19,12 +21,40 @@ class DoublyLinkedList<T> {
 
         size++
     }
-    fun indexOf(value: T): Int {
+    fun delete(value: T) {
+        var current = head
+        while (current != null) {
+            if (current.value == value) {
+
+                if (current == head) {
+                    head = current.next
+                    head?.prev = null
+                }
+                else if (current == tail) {
+                    tail = current.prev
+                    tail?.next = null
+                }
+
+                else {
+                    current.prev?.next = current.next
+                    current.next?.prev = current.prev
+                }
+                size--
+                if (size == 0) {
+                    head = null
+                    tail = null
+                }
+                return
+            }
+            current = current.next
+        }
+    }
+    fun indexOfEmotion(emotion: String): Int {
         var current = head
         var index = 0
 
         while (current != null) {
-            if (current.value == value) return index
+            if ((current.value as EmotionResponse).emotion == emotion) return index
             current = current.next
             index++
         }

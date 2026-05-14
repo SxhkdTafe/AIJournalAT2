@@ -1,7 +1,8 @@
-package com.example.aijournalcompanion.PIPELINES
+package com.example.aijournalcompanion.PipeLine
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import com.example.aijournalcompanion.API.PipeLineAPI
 
 data class PipeLine(
     val analyse: PipelineBuilder,
@@ -22,7 +23,6 @@ data class PipeLine(
                     backEndToFront { input ->
                         api.runPipeline(input)
                     }
-                    updateExternalData()
                 },
                 search = PipelineBuilder().apply {
                     consumeInputUI(Context.InputField.Search)

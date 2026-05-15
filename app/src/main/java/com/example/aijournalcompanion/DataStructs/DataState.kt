@@ -8,23 +8,25 @@ data class DataState(
     val hash: HashMap<EmotionResponse, Int>,
     val list: DoublyLinkedList<EmotionResponse>
 ){
-
+    // Syncs all data with new item
     fun update(item: EmotionResponse) {
         tree.insert(item)
         hash[item] = (hash[item] ?: 0) + 1
         list.add(item)
     }
+    // Syncs all data with deleted item
     fun delete(item: EmotionResponse){
         tree.delete(item)
         hash.remove(item)
         list.delete(item)
     }
+    // Returns List of emotion response for frontend
     fun toList(): List<EmotionResponse> {
         return list.toList()
     }
 
     companion object{
-
+        // Initialization of empty objects
         fun from(): DataState {
             return DataState(
                 tree = BinarySearchTree(),
@@ -32,6 +34,7 @@ data class DataState(
                 list = DoublyLinkedList()
             )
         }
+        // Updates Data Items with Collection of emotion responses
         fun rebuild(items: Collection<EmotionResponse>): DataState {
             val state = from()
             items.forEach {

@@ -60,54 +60,73 @@ class ComposeFunctions {
         state: DataState,
         onDelete: (EmotionResponse) -> Unit
     ) {
+        // Flattens data structure
         val list = state.list.toList()
 
         LazyColumn(
 
             modifier = Modifier.height(300.dp)
         ) {
-
-            items(list,key = { it.text + it.emotion + it.hashCode() }) { item ->
-
-                var offsetX by remember { mutableStateOf(0f) }
+            // Defines items contained and unique key of each
+            items(list,key = { it.id }) { item ->
+                // Amount Item has been dragged on the y axis
+                var offsetY by remember { mutableStateOf(0f) }
+                // Amount an item needs to be dragged
                 val threshold = 150f
 
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(8.dp)
-                        .offset { IntOffset(offsetX.toInt(), 0) }
+                        .offset { IntOffset(0, offsetY.toInt()) }
+                        // Changes color of dragged item if exceeded threshold
                         .background(
-                            if (offsetX > threshold) Color.Red else Color.LightGray
+                            if (offsetY > threshold) Color.Red else Color.LightGray
                         )
                         .pointerInput(Unit) {
 
                             detectDragGestures(
                                 onDrag = { change, dragAmount ->
                                     change.consume()
-                                    offsetX += dragAmount.x
+                                    offsetY += dragAmount.y
                                 },
 
                                 onDragEnd = {
-                                    if (offsetX > threshold) {
+                                    // Deletes item if Threshold exceeded
+                                    if (offsetY > threshold) {
                                         onDelete(item)
                                     }
-                                        offsetX = 0f
+                                    // Resets item to start if not exceeded
+                                    offsetY = 0f
 
                                 },
-
+                                // Resets item to start of y axis where it began
                                 onDragCancel = {
-                                    offsetX = 0f
+                                    offsetY = 0f
                                 }
                             )
                         }
                 ) {
                     Text(
+                        // Displays item in column
                         text = item.text,
                         modifier = Modifier.padding(16.dp)
                     )
                 }
             }
+        }
+        // TrashBox icon to indicate where an item needs to be dragged to
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 20.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = null,
+                modifier = Modifier.size(30.dp)
+            )
         }
     }
     @Composable
@@ -119,13 +138,16 @@ class ComposeFunctions {
             }
 
             DropdownMenu(
+                // If button clicked show all options
                 expanded = expanded,
                 onDismissRequest = { expanded = false }
             ) {
+                // Displays each option in the array as a separate item
                 options.forEach {
                     DropdownMenuItem(
                         text = { Text(it) },
                         onClick = {
+                            // Cancels dropdown and sends selected item to backend
                             onSelectedChange(it)
                             expanded = false
                         }
@@ -134,7 +156,7 @@ class ComposeFunctions {
             }
         }
     }
-
+    // Func to display piechart to front end and to handle dismiss req
     @Composable
     fun EmotionChartPopup(state: DataState, onDismiss: () -> Unit){
         Dialog(onDismissRequest = onDismiss){
@@ -148,9 +170,13 @@ class ComposeFunctions {
     }
     @Composable
     fun EmotionPieChart(state: DataState) {
+        // Flattens data into list
         val data = state.list.toList()
-        val grouped = data.filterNot { it.emotion == "UNKNOWN" }. groupingBy { it.emotion }.eachCount()
+        // Filters and groups data by emotion and count of each
+        val grouped = data.filterNot { it.emotion == "UNKNOWN" || it.emotion == "ERROR" }. groupingBy { it.emotion }.eachCount()
+        // Transforms data for presentation on piechart
         val entries = grouped.map {(emotion, count) -> PieEntry(count.toFloat(), emotion) }
+        // Available colors for display in piechart
         val colors = listOf(
             Color.Red,
             Color.Blue,
@@ -167,11 +193,12 @@ class ComposeFunctions {
                 val dataSet = PieDataSet(entries, "Emotions").apply {
                     valueTextSize = 16f
                     chart.setEntryLabelTextSize(14f)
-
                 }
+                // Includes colors into dataset
                 dataSet.colors = colors
+                // Converts into a presentable form for piechart
                 val pieData = PieData(dataSet)
-
+                // Assigns data to chart
                 chart.data = pieData
                 chart.invalidate()
             }
@@ -189,6 +216,7 @@ class ComposeFunctions {
                     WebView(context).apply {
                         webViewClient = WebViewClient()
                         settings.javaScriptEnabled = true
+                        // Local Html file in project structure
                         loadUrl("file:///android_asset/help.html")
                     }
                 })

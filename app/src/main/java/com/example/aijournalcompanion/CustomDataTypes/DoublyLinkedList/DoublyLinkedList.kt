@@ -52,19 +52,19 @@ class DoublyLinkedList<T> {
             current = current.next
         }
     }
-    fun indexOfEmotion(emotion: String): Int {
+    fun indexOfEmotion(emotion: String): EmotionResponse? {
         var current = head
         var index = 0
 
         while (current != null) {
             // Returns found
-            if ((current.value as EmotionResponse).emotion == emotion) return index
+            if ((current.value as EmotionResponse).emotion == emotion) return current.value as EmotionResponse
             // Assigns next node as value to search
             current = current.next
             index++
         }
 
-        return -1
+        return null
     }
     fun toList(): List<T> {
         val result = mutableListOf<T>()

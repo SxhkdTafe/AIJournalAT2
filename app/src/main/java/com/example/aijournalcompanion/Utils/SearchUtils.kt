@@ -17,38 +17,55 @@ class SearchUtils {
         private fun transform( input: String): String{
             return input.trim().lowercase()
         }
-        private fun search(input: String,ctx: searchContext): String {
+        private fun search(input: String,ctx: searchContext): List<Int> {
             // Converts input into emotion response object
             val key = EmotionResponse(emotion = input, advice = "", text = "")
             // Returns result of Specific search based upon enum of user choice
             return when (ctx.type) {
                 searchChoices.BinaryTree -> {
                     // Calls Search of bin tree
-                    val res = ctx.data.tree.searchByEmotion(input)
-                    // Formats Output for frontend
-                    if ( res != null){
-                        "${res.value.emotion} Found"
+                    val res = mutableListOf<Int>()
+                    val s = ctx.data.tree.toList().size
+                    val dta = ctx.data.tree
+                    for(i in 0 until  s - 1){
+                        val result = ctx.data.tree.searchByEmotion(input)
+                        if ( result!= null){
+                            dta.delete(result.value)
+                            res.add(i)
+                        }
                     }
-                    else{
-                        "null: Not found"
-                    }
+                    res
                 }
                 // Searches hashmap and returns index of found item
-                searchChoices.HashBasedMap -> ctx.data.hash[key]?.toString() ?:"null: Not found"
+                searchChoices.HashBasedMap -> {
+                    val res = mutableListOf<Int>()
+                    val s = ctx.data.hash.toList().size
+                    val dta = ctx.data.hash
+                    for(i in 0 until  s - 1){
+                        val result = ctx.data.hash[key]?.toString()
+                        if (result != null){
+                            dta.remove(key)
+                            res.add(i)
+                        }
+                    }
+                    res
+                }
                 // Searches doubly linked list and returns index of found item
                 searchChoices.DoublyLinkedList ->{
-                    val r = ctx.data.list.indexOfEmotion(input)
-                    // Not found result default from search func
-                    if(r == -1){
-                        "null: Not found"
-                    }
-                    else{
-                        r.toString()
+                    val res = mutableListOf<Int>()
+                    val s = ctx.data.list.toList().size
+                    val dta = ctx.data.list
+                    for (i in 0 until s -1){
+                        val result = ctx.data.list.indexOfEmotion(input)
+                        if (result != null){
+                            dta.delete(result)
+                            res.add(i)
+                        }
                     }
                 }
                 // Returns Prompt for user to select a choice
-                searchChoices.SelectSearchChoice -> "Please Select a search type"
-            }
+                searchChoices.SelectSearchChoice -> mutableListOf<Int>()
+            } as List<Int>
         }
         // Formats results for frontend display
         private fun display(input: String): String{

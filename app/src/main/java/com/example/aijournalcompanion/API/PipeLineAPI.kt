@@ -6,10 +6,10 @@ class PipeLineAPI {
     // Url to API
     private val apiUrl = "http://10.0.2.2:8000/emotion_parse"
     private val call = Api()
-    private suspend fun trimInput(input: String) : String{
+    private fun trimInput(input: String) : String{
         return input.trim()
     }
-    private suspend fun formatResult(input: EmotionResponse) : EmotionResponse {
+    private fun formatResult(input: EmotionResponse) : EmotionResponse {
         return EmotionResponse(
             emotion = input.emotion,
             advice = input.advice,
@@ -34,11 +34,8 @@ class PipeLineAPI {
             text = "Emotion: $emotion | Advice: $advice"
         )
     }
-    // Chains two suspending functions by passing the result of the first to the second
-    private infix fun<A,B,C> ( suspend (A)-> B).then(next : suspend (B) -> C):suspend (A) -> C = {input -> next(this(input))}
     // Pipe that takes in user input and outputs EmotionResponse object
     suspend fun runPipeline(input: String): EmotionResponse {
-        val asyncPipe = ::trimInput then :: callBackend then :: formatResult
-        return  asyncPipe(input)
+        return  formatResult(callBackend(trimInput(input)))
     }
 }

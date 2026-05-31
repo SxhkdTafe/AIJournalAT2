@@ -5,13 +5,13 @@ import com.example.aijournalcompanion.CustomDataTypes.DoublyLinkedList.DoublyLin
 
 data class DataState(
     val tree: BinarySearchTree<EmotionResponse>,
-    val hash: HashMap<EmotionResponse, Int>,
+    val hash: HashMap<EmotionResponse, EmotionResponse?>,
     val list: DoublyLinkedList<EmotionResponse>
 ){
     // Syncs all data with new item
     fun update(item: EmotionResponse) {
         tree.insert(item)
-        hash[item] = (hash[item] ?: 0) + 1
+        hash[item] = (hash[item])
         list.add(item)
     }
     // Syncs all data with deleted item

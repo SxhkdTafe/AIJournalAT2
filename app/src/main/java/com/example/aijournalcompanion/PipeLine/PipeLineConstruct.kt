@@ -26,6 +26,8 @@ class Context(
     var result by mutableStateOf("")
     // Instance Variable of DataState class containing dataTypes
     var data by mutableStateOf(DataState.from())
+
+    var oldData by mutableStateOf(DataState.from())
     // Bool Variables mutating if respective button clicked
     var showHelp by mutableStateOf(false)
     var showChart by mutableStateOf(false)
@@ -69,6 +71,9 @@ class PipelineBuilder {
             result = res.text
             // Extracts Object to be manipulated in other funcs
             lastResponse = res
+            if(oldData.list.toList().isNotEmpty()){
+                data = oldData
+            }
             data = DataState.rebuild(data.toList() + res)
         }
     }
@@ -79,7 +84,14 @@ class PipelineBuilder {
                 type = searchSelected,
                 data = data
             )
-            result = SearchUtils.pipe(input, ctx)
+            oldData = data
+            data = DataState.rebuild( SearchUtils.pipe(input, ctx))
+        }
+    }
+    fun clean(){
+        steps += logTaskMainPipe("clean"){
+            val filter = EmotionResponse(emotion = "Please Select a Search Option or load data", advice = "", text = "")
+            data.toList().forEach { if(it == filter) data.delete(it) }
         }
     }
     // Sorts Data of List

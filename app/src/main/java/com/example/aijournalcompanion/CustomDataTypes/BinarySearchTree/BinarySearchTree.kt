@@ -13,24 +13,25 @@ class BinarySearchTree<T: Comparable<T>> {
      fun delete(value: T){
          root = removeRec(root,value)
      }
-    fun searchByEmotion(emotion: String): Node<T>? {
-        var current = root
-        while (current != null) {
-            // Extracts value out of tree node
-            val currentEmotion = (current.value as EmotionResponse).emotion
-            // Uses override to compare Emotion Object value
-            val cmp = emotion.compareTo(currentEmotion)
-            // Reassigns tree to branch
-            current = when {
-                // Returns found val tree
-                cmp == 0 -> return current
-                // Goes down left branch if less than
-                cmp < 0 -> current.left
-                else -> current.right
+    fun searchByEmotion(emotion: String): List<EmotionResponse> {
+        val result = mutableListOf<EmotionResponse>()
+
+        fun scan(node: Node<T>?) {
+            if (node == null) return
+
+            val nodeEmotion = (node.value as EmotionResponse).emotion
+            val value = node.value
+            if (value is EmotionResponse) {
+                if (value.emotion == emotion){
+                    result.add(value)
+                }
             }
+            scan(node.left)
+            scan(node.right)
         }
 
-        return null
+        scan(root)
+        return result
     }
     private fun insertRec(node: Node<T>?, value: T): Node<T> {
         // Makes root node value

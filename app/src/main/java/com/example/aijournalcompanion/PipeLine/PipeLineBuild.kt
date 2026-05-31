@@ -23,12 +23,14 @@ data class PipeLine(
                     backEndToFront { input ->
                         api.runPipeline(input)
                     }
+                    clean()
                 },
                 search = PipelineBuilder().apply {
                     consumeInputUI(Context.InputField.Search)
                     search()
                 },
                 sort = PipelineBuilder().apply {
+                    clean()
                     sort()
                 },
                 help = PipelineBuilder().apply {

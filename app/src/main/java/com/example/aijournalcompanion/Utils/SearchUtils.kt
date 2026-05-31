@@ -47,8 +47,8 @@ class SearchUtils {
                 return input
             }
             val fail = mutableListOf<EmotionResponse>()
-            val response = EmotionResponse(emotion = "Please Select a Search Option or load data", advice = "", text = "")
-            fail.add(1, (response))
+            val response = EmotionResponse(emotion = "", advice = "", text = "Please Select a Search Option or target not Found")
+            fail.add(0, (response))
             return fail
         }
         // Functional PipeLine, Takes the first two combined out put and passes output to the next, which then combines with the next generic and produces a result

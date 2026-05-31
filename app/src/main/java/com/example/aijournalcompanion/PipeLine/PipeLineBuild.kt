@@ -27,6 +27,7 @@ data class PipeLine(
                 },
                 search = PipelineBuilder().apply {
                     consumeInputUI(Context.InputField.Search)
+                    clean()
                     search()
                 },
                 sort = PipelineBuilder().apply {

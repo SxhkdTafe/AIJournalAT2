@@ -80,6 +80,9 @@ class PipelineBuilder {
     // Calls the Search pipe that mutates depending upon searchSelected
     fun search(){
         steps += logTaskMainPipe("Search") {
+            if(oldData.list.toList().isNotEmpty()){
+                data = oldData
+            }
             val ctx = searchContext(
                 type = searchSelected,
                 data = data
@@ -88,9 +91,10 @@ class PipelineBuilder {
             data = DataState.rebuild( SearchUtils.pipe(input, ctx))
         }
     }
+    // Removes User message from display
     fun clean(){
         steps += logTaskMainPipe("clean"){
-            val filter = EmotionResponse(emotion = "Please Select a Search Option or load data", advice = "", text = "")
+            val filter = EmotionResponse(emotion = "", advice = "", text = "Please Select a Search Option or target not Found")
             data.toList().forEach { if(it == filter) data.delete(it) }
         }
     }

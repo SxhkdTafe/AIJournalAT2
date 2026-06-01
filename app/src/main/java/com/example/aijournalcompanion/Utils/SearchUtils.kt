@@ -26,12 +26,11 @@ class SearchUtils {
                     // Calls Search of bin tree
                     ctx.data.tree.searchByEmotion(input)
                 }
-                // Searches hashmap and returns index of found item
+                // Searches hashmap and returns found items
                 searchChoices.HashBasedMap -> {
-                    val result: EmotionResponse? = ctx.data.hash[key]
-                    if (result != null) listOf(result) else emptyList()
+                    ctx.data.hash[key] ?: emptyList()
                 }
-                // Searches doubly linked list and returns index of found item
+                // Searches doubly linked list and returns found items
                 searchChoices.DoublyLinkedList ->{
                      ctx.data.list.FoundEmotions(input)
                 }

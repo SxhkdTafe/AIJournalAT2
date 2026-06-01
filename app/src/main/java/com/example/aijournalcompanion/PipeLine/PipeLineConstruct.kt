@@ -48,9 +48,9 @@ class Context(
     // Func for deleting item internally from ViewBox
     fun deleteItem(item: EmotionResponse) {
         data.delete(item)
-
-        data = DataState.rebuild(
-            data.tree.toList()
+        oldData.delete(item)
+        oldData = DataState.rebuild(oldData.tree.toList())
+        data = DataState.rebuild(data.tree.toList()
         )
     }
 }
